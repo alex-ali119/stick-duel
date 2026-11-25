@@ -13,6 +13,7 @@
       src="https://alex-ali119.github.io/stick-duel/remote-updates/stickman-battle-logo.png"
       alt="Loading"
     >
+
     <div class="sd-load-area">
       <div class="sd-load-track">
         <div id="sdLoadProgress"></div>
@@ -22,12 +23,14 @@
   `;
 
   const style = document.createElement('style');
+
   style.textContent = `
     #sdRemoteLoading {
       position: fixed;
       inset: 0;
       width: 100%;
       height: 100%;
+      height: 100dvh;
       z-index: 2147483647;
       background: #160d24;
       overflow: hidden;
@@ -72,6 +75,20 @@
       font-weight: bold;
       margin-top: 8px;
     }
+
+    @media (orientation: portrait) {
+      #sdRemoteLoading {
+        width: 100vh;
+        height: 100vw;
+        width: 100dvh;
+        height: 100vw;
+        top: 50%;
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        transform: translate(-50%, -50%) rotate(90deg);
+      }
+    }
   `;
 
   document.head.appendChild(style);
@@ -79,10 +96,14 @@
 
   const progress = document.getElementById('sdLoadProgress');
   const percent = document.getElementById('sdLoadPercent');
+
   const start = performance.now();
 
   function update(now) {
-    const value = Math.min((now - start) / 5000 * 100, 100);
+    const value = Math.min(
+      ((now - start) / 5000) * 100,
+      100
+    );
 
     progress.style.width = value + '%';
     percent.textContent = Math.floor(value) + '%';

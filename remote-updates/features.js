@@ -2,98 +2,98 @@
 (() => {
   'use strict';
 
-  window.StickDuelRemote = window.StickDuelRemote || {};
-  window.StickDuelRemote.loaded = true;
+  if (document.getElementById('sdRemoteLoading')) return;
 
-  function showLoading() {
-    if (document.getElementById('sdRemoteLoading')) return;
+  const screen = document.createElement('div');
+  screen.id = 'sdRemoteLoading';
 
-    const screen = document.createElement('div');
-    screen.id = 'sdRemoteLoading';
-
-    screen.innerHTML = `
-      <img src="https://alex-ali119.github.io/stick-duel/remote-updates/stickman-battle-logo.png">
-      <div class="sd-load-area">
-        <div class="sd-load-track">
-          <div id="sdLoadProgress"></div>
-        </div>
-        <div id="sdLoadPercent">0%</div>
+  screen.innerHTML = `
+    <img
+      id="sdLoadingImage"
+      src="https://alex-ali119.github.io/stick-duel/remote-updates/stickman-battle-logo.png"
+      alt="Loading"
+    >
+    <div class="sd-load-area">
+      <div class="sd-load-track">
+        <div id="sdLoadProgress"></div>
       </div>
-    `;
+      <div id="sdLoadPercent">0%</div>
+    </div>
+  `;
 
-    const style = document.createElement('style');
-    style.textContent = `
-      #sdRemoteLoading {
-        position: fixed;
-        inset: 0;
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
-        z-index: 2147483647;
-        background: #160d24;
-        overflow: hidden;
-      }
-      #sdRemoteLoading img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      .sd-load-area {
-        position: absolute;
-        left: 10%;
-        right: 10%;
-        bottom: 9%;
-        text-align: center;
-      }
-      .sd-load-track {
-        height: 13px;
-        background: #ffffff55;
-        border: 2px solid white;
-        border-radius: 20px;
-        overflow: hidden;
-      }
-      #sdLoadProgress {
-        width: 0%;
-        height: 100%;
-        background: #00eaff;
-        border-radius: 20px;
-      }
-      #sdLoadPercent {
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        margin-top: 9px;
-      }
-    `;
-
-    document.head.appendChild(style);
-    document.body.appendChild(screen);
-
-    const progress = document.getElementById('sdLoadProgress');
-    const percent = document.getElementById('sdLoadPercent');
-    const start = performance.now();
-
-    function update(now) {
-      const value = Math.min((now - start) / 5000 * 100, 100);
-
-      progress.style.width = value + '%';
-      percent.textContent = Math.floor(value) + '%';
-
-      if (value < 100) {
-        requestAnimationFrame(update);
-      } else {
-        screen.remove();
-        style.remove();
-      }
+  const style = document.createElement('style');
+  style.textContent = `
+    #sdRemoteLoading {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2147483647;
+      background: #160d24;
+      overflow: hidden;
     }
 
-    requestAnimationFrame(update);
+    #sdLoadingImage {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .sd-load-area {
+      position: absolute;
+      left: 15%;
+      right: 15%;
+      bottom: 8%;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .sd-load-track {
+      height: 14px;
+      background: #ffffff66;
+      border: 2px solid white;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    #sdLoadProgress {
+      width: 0%;
+      height: 100%;
+      background: #00eaff;
+      border-radius: 20px;
+    }
+
+    #sdLoadPercent {
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+  `;
+
+  document.head.appendChild(style);
+  document.body.appendChild(screen);
+
+  const progress = document.getElementById('sdLoadProgress');
+  const percent = document.getElementById('sdLoadPercent');
+  const start = performance.now();
+
+  function update(now) {
+    const value = Math.min((now - start) / 5000 * 100, 100);
+
+    progress.style.width = value + '%';
+    percent.textContent = Math.floor(value) + '%';
+
+    if (value < 100) {
+      requestAnimationFrame(update);
+    } else {
+      screen.remove();
+      style.remove();
+    }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', showLoading, { once: true });
-  } else {
-    showLoading();
-  }
+  requestAnimationFrame(update);
 })();

@@ -963,5 +963,21 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
 })();
 </script>
 
+<!-- Stick Duel: remote features loader. The local game remains usable if this request fails. -->
+<script>
+(()=>{
+  const remoteBase='https://alex-ali119.github.io/stick-duel/remote-updates/';
+  const remoteScript=document.createElement('script');
+  remoteScript.src=remoteBase+'features.js?v='+Date.now();
+  remoteScript.async=true;
+  remoteScript.onload=()=>{
+    window.dispatchEvent(new CustomEvent('stickduel:remote-ready'));
+    console.info('Stick Duel remote features loaded');
+  };
+  remoteScript.onerror=()=>console.warn('Stick Duel remote features unavailable; continuing with local game');
+  document.head.appendChild(remoteScript);
+})();
+</script>
+
 </body>
 </html>

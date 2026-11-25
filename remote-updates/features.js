@@ -12,7 +12,7 @@
     screen.id = 'sdRemoteLoading';
 
     screen.innerHTML = `
-      <img src="https://alex-ali119.github.io/stick-duel/remote-updates/loading.png">
+      <img src="https://alex-ali119.github.io/stick-duel/remote-updates/stickman-battle-logo.png">
       <div class="sd-load-area">
         <div class="sd-load-track">
           <div id="sdLoadProgress"></div>

@@ -93,7 +93,9 @@ p{font-size:13px;opacity:.75;line-height:1.7;margin:0}
 addEventListener('contextmenu',e=>e.preventDefault());
 const $=i=>document.getElementById(i),cv=$('c'),G=380,WY=G+52;let x=cv.getContext('2d');
 let S={};try{S=JSON.parse(localStorage.getItem('sd')||'{}')}catch(e){}
-S.c=S.c??50;S.own=S.own||[0];S.w=S.w||0;S.col=S.col||'#4aa3ff';S.map=S.map||0;S.lock=S.lock||0;
+S.c=S.c??50;S.own=S.own||[0];S.w=S.w||0;
+S.hOwn=S.hOwn||[0];
+S.col=S.col||'#4aa3ff';S.map=S.map||0;S.lock=S.lock||0;
 S.cf=Object.assign({sh:1,bc:0,ko:0,dm:1,jh:200,jt:0},S.cf||{});
 S.gf=Object.assign({q:1,sd:1,pt:1,shk:1},S.gf||{});
 S.team=S.team||0;S.tms=S.tms||[0,0,1,1];
@@ -325,10 +327,46 @@ let PK={k:'w',i:0};
 function pick(k,i){PK={k,i};show('pk')}
 function setc(i,k,c){S.sl[i][k]=c;save();show('lob')}
 function setw(v){S.sl[PK.i].w=v;save();show('lob')}
-function seth(v){S.sl[PK.i].h=v;save();show('lob')}
+const HAT_PRICE=[0,50,50,100,100,100,100,200,200,200,200,350];
+
+function ownedHats(){
+  return (S.hOwn||[0]).filter(k=>Number.isInteger(k)&&HATS[k]);
+}
+
+function buyHat(k){
+  if(!Number.isInteger(k)||!HATS[k]||ownedHats().includes(k))return;
+  const p=HAT_PRICE[k];
+  if(S.c<p){
+    alert('لا تملك عملات كافية!');
+    return;
+  }
+  if(!confirm(`شراء ${HATS[k][1]} مقابل ${p} عملة؟`))return;
+  S.c-=p;
+  S.hOwn.push(k);
+  save();
+  show('pk');
+}
+
+function seth(v){
+  if(!ownedHats().includes(v))return;
+  S.sl[PK.i].h=v;
+  save();
+  show('lob');
+}
 function pkUI(){const s=S.sl[PK.i];
 if(PK.k=='w')return `<div class="cn"><h2>Stick ${PK.i+1} — 🔫 السلاح</h2><div class="gr2"><u class="mp${s.w==-1?' on':''}" onclick="setw(-1)">🎲<small>عشوائي</small></u>${WP.map((w,k)=>{const o=S.own.includes(k);return `<u class="mp${s.w==k?' on':''}${o?'':' lk'}" ${o?`onclick="setw(${k})"`:''}>${o?w.ic:'🔒'}<small>${w.nm}</small></u>`}).join('')}</div><p>الأسلحة المتاحة هي التي اشتريتها من المتجر 🛒</p><button onclick="show('lob')">رجوع</button></div>`;
-if(PK.k=='h')return `<div class="cn"><h2>Stick ${PK.i+1} — 🎩 القبعة</h2><div class="gr2">${HATS.map((h,k)=>`<u class="mp${s.h==k?' on':''}" onclick="seth(${k})">${h[0]}<small>${h[1]}</small></u>`).join('')}</div><button onclick="show('lob')">رجوع</button></div>`;
+if(PK.k=='h')return `<div class="cn">
+<h2>Stick ${PK.i+1} — 🎩 القبعة</h2>
+<p>رصيدك: 🪙 ${S.c}</p>
+<div class="gr2">${HATS.map((h,k)=>{
+const own=ownedHats().includes(k);
+return `<u class="mp${s.h==k?' on':''}${own?'':' lk'}" onclick="${own?'seth':'buyHat'}(${k})">
+${h[0]}
+<small>${h[1]}</small>
+<small>${own?'✔ مملوكة':'🪙 '+HAT_PRICE[k]+' - شراء'}</small>
+</u>`;
+}).join('')}</div>
+<button onclick="show('lob')">رجوع</button></div>`;
 return `<div class="cn"><h2>Stick ${PK.i+1} — 🎨 ${PK.k=='a'?'لون 1 (الجسم)':'لون 2 (القبعة واليدين)'}</h2><div class="gr2">${PAL.map(c=>`<u class="mp${s[PK.k]==c?' on':''}" style="background:${c};height:46px" onclick="setc(${PK.i},'${PK.k}','${c}')"></u>`).join('')}</div><button onclick="show('lob')">رجوع</button></div>`}
 function lobUI(){const NS=LB.length,h=Math.ceil(NS/2),G1=[],G2=[];for(let i=0;i<NS;i++)(i<h?G1:G2).push(i);
 const tm=S.team&&NS>=3,act=[];LB.forEach((t,i)=>{if(t!='N')act.push(i)});
@@ -833,7 +871,7 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
   function randomCode(){return Math.random().toString(36).slice(2,8).toUpperCase()}
   function selectedData(){
     const s=S.sl[0]||{};
-    return {weapon:(S.own||[0]).includes(s.w)?s.w:0,hat:Number.isInteger(s.h)?s.h:0,
+    return {weapon:(S.own||[0]).includes(s.w)?s.w:0,hat:ownedHats().includes(s.h)?s.h:0,
       body:s.a||'#4aa3ff',trim:s.b||'#ffffff'};
   }
   async function createRoom(){
@@ -890,7 +928,7 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
       const n=Number(value);if(!ownedWeapons().includes(n))return;
       current.weapon=n;
     }else if(key==='hat'){
-      const n=Number(value);if(!HATS[n])return;current.hat=n;
+      const n=Number(value);if(!ownedHats().includes(n))return;current.hat=n;
     }else if(key==='body'||key==='trim'){
       if(!PAL.includes(value))return;current[key]=value;
     }
@@ -921,7 +959,7 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
     }
     const sel=me?.selection||selectedData();
     const weaponButtons=ownedWeapons().map(k=>`<button class="onl-item ${sel.weapon===k?'sel':''}" onclick="sdPick('weapon',${k})">${WP[k].ic}<br>${esc(WP[k].nm)}</button>`).join('');
-    const hatButtons=HATS.map((h,k)=>`<button class="onl-item ${sel.hat===k?'sel':''}" onclick="sdPick('hat',${k})">${h[0]}<br>${esc(h[1])}</button>`).join('');
+    const hatButtons=ownedHats().map(k=>{const h=HATS[k];return `<button class="onl-item ${sel.hat===k?'sel':''}" onclick="sdPick('hat',${k})">${h[0]}<br>${esc(h[1])}</button>`}).join('');
     const colors=PAL.map(c=>`<button class="onl-item ${sel.body===c?'sel':''}" style="background:${c};height:42px" aria-label="لون" onclick="sdPick('body','${c}')"></button>`).join('');
     const trims=PAL.map(c=>`<button class="onl-item ${sel.trim===c?'sel':''}" style="background:${c};height:42px" aria-label="لون" onclick="sdPick('trim','${c}')"></button>`).join('');
     const playerCard=(p,isMe)=>`<div class="onl-player"><div><b>${isMe?'🟦 أنت':'🟥 الخصم'}: ${esc(p?.name||'بانتظار اللاعب')}</b><div class="onl-small">${p?.selection?`${WP[p.selection.weapon]?.ic||'👊'} ${esc(WP[p.selection.weapon]?.nm||'قبضة')} • ${HATS[p.selection.hat]?.[0]||'🚫'} ${esc(HATS[p.selection.hat]?.[1]||'بدون')}`:'لم يدخل بعد'}</div></div><b class="${p?.ready?'onl-ok':'onl-wait'}">${p?.ready?'✔ جاهز':'⏳ غير جاهز'}</b></div>`;
@@ -960,22 +998,6 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
   window.sdLeaveRoom=leaveRoom;
   window.sdCopyCode=()=>{if(roomCode)navigator.clipboard?.writeText(roomCode).then(()=>msgBox('تم نسخ الرمز')).catch(()=>msgBox('رمز الغرفة: '+roomCode))};
   show('home');
-})();
-</script>
-
-<!-- Stick Duel: remote features loader. The local game remains usable if this request fails. -->
-<script>
-(()=>{
-  const remoteBase='https://alex-ali119.github.io/stick-duel/remote-updates/';
-  const remoteScript=document.createElement('script');
-  remoteScript.src=remoteBase+'features.js?v='+Date.now();
-  remoteScript.async=true;
-  remoteScript.onload=()=>{
-    window.dispatchEvent(new CustomEvent('stickduel:remote-ready'));
-    console.info('Stick Duel remote features loaded');
-  };
-  remoteScript.onerror=()=>console.warn('Stick Duel remote features unavailable; continuing with local game');
-  document.head.appendChild(remoteScript);
 })();
 </script>
 

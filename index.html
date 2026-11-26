@@ -885,7 +885,15 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
         ref=null;
       }
       if(!ref)throw new Error('تعذر إنشاء رمز فريد. حاول مجدداً.');
-      const player={name:user.displayName||'لاعب',uid:user.uid,ready:false,selection:selectedData(),joinedAt:Date.now()};
+      const profile=getSDPlayerProfile();
+const player={
+  name:profile.name,
+  avatar:profile.avatar,
+  uid:user.uid,
+  ready:false,
+  selection:selectedData(),
+  joinedAt:Date.now()
+};
       await ref.set({host:user.uid,status:'waiting',createdAt:firebase.database.ServerValue.TIMESTAMP,players:{[user.uid]:player}});
       roomCode=code;watchRoom(code);
     }catch(e){msgBox('خطأ: '+e.message)}
@@ -903,7 +911,15 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
       const players=room.players||{};
       if(players[user.uid]){roomCode=code;watchRoom(code);return}
       if(Object.keys(players).length>=2){msgBox('الغرفة ممتلئة.');return}
-      await ref.child('players/'+user.uid).set({name:user.displayName||'لاعب',uid:user.uid,ready:false,selection:selectedData(),joinedAt:Date.now()});
+      const profile=getSDPlayerProfile();
+await ref.child('players/'+user.uid).set({
+  name:profile.name,
+  avatar:profile.avatar,
+  uid:user.uid,
+  ready:false,
+  selection:selectedData(),
+  joinedAt:Date.now()
+});
       roomCode=code;watchRoom(code);
     }catch(e){msgBox('خطأ: '+e.message)}
     finally{onlineBusy=false}
@@ -918,7 +934,17 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
     };
     roomRef.on('value',roomListener);
   }
-  function ownedWeapons(){
+ function getSDPlayerProfile(){
+  let p={};
+  try{
+    p=JSON.parse(localStorage.getItem('sdProfile')||'{}');
+  }catch(e){}
+  return {
+    name:p.nick||user?.displayName||'لاعب',
+    avatar:p.avatar||''
+  };
+}
+   function ownedWeapons(){
     return (S.own||[0]).filter(k=>Number.isInteger(k)&&WP[k]);
   }
   async function updateSelection(key,value){
@@ -962,7 +988,21 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
     const hatButtons=ownedHats().map(k=>{const h=HATS[k];return `<button class="onl-item ${sel.hat===k?'sel':''}" onclick="sdPick('hat',${k})">${h[0]}<br>${esc(h[1])}</button>`}).join('');
     const colors=PAL.map(c=>`<button class="onl-item ${sel.body===c?'sel':''}" style="background:${c};height:42px" aria-label="لون" onclick="sdPick('body','${c}')"></button>`).join('');
     const trims=PAL.map(c=>`<button class="onl-item ${sel.trim===c?'sel':''}" style="background:${c};height:42px" aria-label="لون" onclick="sdPick('trim','${c}')"></button>`).join('');
-    const playerCard=(p,isMe)=>`<div class="onl-player"><div><b>${isMe?'🟦 أنت':'🟥 الخصم'}: ${esc(p?.name||'بانتظار اللاعب')}</b><div class="onl-small">${p?.selection?`${WP[p.selection.weapon]?.ic||'👊'} ${esc(WP[p.selection.weapon]?.nm||'قبضة')} • ${HATS[p.selection.hat]?.[0]||'🚫'} ${esc(HATS[p.selection.hat]?.[1]||'بدون')}`:'لم يدخل بعد'}</div></div><b class="${p?.ready?'onl-ok':'onl-wait'}">${p?.ready?'✔ جاهز':'⏳ غير جاهز'}</b></div>`;
+    const playerCard=(p,isMe)=>`
+<div class="onl-player" style="display:flex;align-items:center;gap:12px">
+  <img src="${p?.avatar||''}"
+    onerror="this.style.display='none'"
+    style="width:52px;height:52px;border-radius:50%;object-fit:cover;background:#35445c;border:2px solid #4aa3ff">
+  <div style="flex:1;min-width:0">
+    <b>${isMe?'🟦 أنت':'🟥 الخصم'}: ${esc(p?.name||'بانتظار اللاعب')}</b>
+    <div class="onl-small">
+      ${p?.selection?`${WP[p.selection.weapon]?.ic||'👊'} ${esc(WP[p.selection.weapon]?.nm||'قبضة')} • ${HATS[p.selection.hat]?.[0]||'🚫'} ${esc(HATS[p.selection.hat]?.[1]||'بدون')}`:'لم يدخل بعد'}
+    </div>
+  </div>
+  <b class="${p?.ready?'onl-ok':'onl-wait'}">
+    ${p?.ready?'✔ جاهز':'⏳ غير جاهز'}
+  </b>
+</div>`;<div><b>${isMe?'🟦 أنت':'🟥 الخصم'}: ${esc(p?.name||'بانتظار اللاعب')}</b><div class="onl-small">${p?.selection?`${WP[p.selection.weapon]?.ic||'👊'} ${esc(WP[p.selection.weapon]?.nm||'قبضة')} • ${HATS[p.selection.hat]?.[0]||'🚫'} ${esc(HATS[p.selection.hat]?.[1]||'بدون')}`:'لم يدخل بعد'}</div></div><b class="${p?.ready?'onl-ok':'onl-wait'}">${p?.ready?'✔ جاهز':'⏳ غير جاهز'}</b></div>`;
     showOnline(`<h2>🏠 غرفة Stick Duel</h2>
       <div class="onl-card onl-row"><div><b>رمز الغرفة: <span style="color:#ffd34a;font-size:22px">${esc(roomCode)}</span></b><p class="onl-small">أرسل الرمز لصديقك للانضمام.</p></div><button style="min-width:90px" onclick="sdCopyCode()">نسخ الرمز</button></div>
       <div class="onl-card"><b>👥 اللاعبون</b>${playerCard(me,true)}${playerCard(other,false)}</div>
@@ -1003,9 +1043,192 @@ alert('خطأ تسجيل الدخول: '+e.code+' - '+e.message);
 <script>
 window.addEventListener('load', function () {
   const s = document.createElement('script');
-  s.src = 'remote-updates/features.js?v=2';
+  s.src = 'https://alex-ali119.github.io/stick-duel/remote-updates/features.js?v=3';
   document.body.appendChild(s);
 });
+</script>
+<script>
+(function(){
+'use strict';
+
+const menu=document.getElementById('m');
+if(!menu)return;
+
+let profile={};
+try{
+  profile=JSON.parse(localStorage.getItem('sdProfile')||'{}');
+}catch(e){}
+
+let avatar=profile.avatar||'';
+
+const esc=v=>String(v||'').replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
+
+function getEmail(){
+  try{
+    return firebase.auth().currentUser?.email||'غير مرتبط';
+  }catch(e){
+    return 'غير مرتبط';
+  }
+}
+
+function openProfile(){
+  let modal=document.getElementById('sdProfileModal');
+
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='sdProfileModal';
+    modal.style.cssText=`
+      position:absolute;inset:0;z-index:99999;
+      background:#080c14f5;display:flex;
+      align-items:center;justify-content:center;
+      padding:15px;overflow:auto;
+    `;
+    document.getElementById('app').appendChild(modal);
+  }
+
+  modal.innerHTML=`
+    <div style="
+      width:100%;max-width:430px;
+      background:#1b2435;border:2px solid #34445f;
+      border-radius:18px;padding:18px;
+      display:flex;flex-direction:column;
+      gap:12px;max-height:95%;overflow:auto;
+    ">
+      <h2 style="text-align:center">👤 الملف الشخصي</h2>
+
+      <div style="text-align:center">
+        <img id="sdAvatarPreview"
+          src="${avatar||''}"
+          style="
+            width:95px;height:95px;border-radius:50%;
+            object-fit:cover;background:#35445c;
+            border:3px solid #4aa3ff;
+          ">
+        <br>
+        <button id="sdChoosePhoto"
+          style="margin-top:8px;background:#287bbd">
+          📷 اختيار صورة من المعرض
+        </button>
+        <input id="sdPhotoInput" type="file"
+          accept="image/*" style="display:none">
+      </div>
+
+      <label>الاسم</label>
+      <input id="sdFullName" value="${esc(profile.name)}"
+        placeholder="اكتب اسمك"
+        style="padding:12px;border-radius:8px;font-size:16px">
+
+      <label>اسم اللاعب (Nickname)</label>
+      <input id="sdNickname" value="${esc(profile.nick)}"
+        placeholder="اسمك داخل اللعبة"
+        style="padding:12px;border-radius:8px;font-size:16px">
+
+      <label>الجنس</label>
+      <select id="sdGender"
+        style="padding:12px;border-radius:8px;font-size:16px">
+        <option value="">اختر</option>
+        <option value="ذكر" ${profile.gender==='ذكر'?'selected':''}>ذكر</option>
+        <option value="أنثى" ${profile.gender==='أنثى'?'selected':''}>أنثى</option>
+      </select>
+
+      <label>Gmail</label>
+      <div style="background:#101827;padding:12px;border-radius:8px">
+        ${esc(getEmail())}
+      </div>
+
+      <small style="color:#aaa">
+        بريدك الإلكتروني خاص ولا يظهر للاعبين الآخرين.
+      </small>
+
+      <button id="sdSaveProfile"
+        style="background:#21965b">💾 حفظ الملف الشخصي</button>
+
+      <button id="sdCloseProfile"
+        style="background:#555">رجوع</button>
+    </div>
+  `;
+
+  modal.querySelector('#sdCloseProfile').onclick=()=>modal.remove();
+
+  modal.querySelector('#sdChoosePhoto').onclick=()=>{
+    modal.querySelector('#sdPhotoInput').click();
+  };
+
+  modal.querySelector('#sdPhotoInput').onchange=e=>{
+    const file=e.target.files[0];
+    if(!file)return;
+
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const scale=Math.min(256/img.width,256/img.height,1);
+        canvas.width=Math.round(img.width*scale);
+        canvas.height=Math.round(img.height*scale);
+
+        canvas.getContext('2d').drawImage(
+          img,0,0,canvas.width,canvas.height
+        );
+
+        avatar=canvas.toDataURL('image/jpeg',0.75);
+        modal.querySelector('#sdAvatarPreview').src=avatar;
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  modal.querySelector('#sdSaveProfile').onclick=()=>{
+    const name=modal.querySelector('#sdFullName').value.trim();
+    const nick=modal.querySelector('#sdNickname').value.trim();
+    const gender=modal.querySelector('#sdGender').value;
+
+    if(!nick){
+      alert('اكتب اسم اللاعب أولاً');
+      return;
+    }
+
+    profile={name,nick,gender,avatar};
+
+    try{
+      localStorage.setItem('sdProfile',JSON.stringify(profile));
+      alert('تم حفظ الملف الشخصي بنجاح');
+      modal.remove();
+    }catch(e){
+      alert('تعذر حفظ الصورة. اختر صورة أصغر.');
+    }
+  };
+}
+
+function addProfileButton(){
+  if(menu.style.display!=='block'||!menu.classList.contains('tr'))return;
+  if(document.getElementById('sdProfileOpen'))return;
+
+  const btn=document.createElement('button');
+  btn.id='sdProfileOpen';
+  btn.textContent='👤 ملفي الشخصي';
+  btn.style.cssText=`
+    position:absolute;top:55px;right:12px;
+    z-index:20;width:auto;min-width:0;
+    padding:7px 12px;font-size:13px;
+    background:#168b9a;
+  `;
+  btn.onclick=openProfile;
+  menu.appendChild(btn);
+}
+
+new MutationObserver(addProfileButton).observe(menu,{
+  childList:true,
+  attributes:true,
+  attributeFilter:['style','class']
+});
+
+addProfileButton();
+
+})();
 </script>
 </body>
 </html>

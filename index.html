@@ -791,7 +791,24 @@ async function syncInventory() {
 }
 
 
+async function persistInventory() {
+  if (!user) return false;
 
+  try {
+    await db.ref("users/" + user.uid + "/inventory").update({
+      coins: Number(S.c) || 0,
+      weapons: S.own || [0],
+      updatedAt: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    return true;
+
+  } catch (e) {
+    console.error("Firebase save:", e);
+    alert("تعذر حفظ العملات: " + e.message);
+    return false;
+  }
+}
 
 
 

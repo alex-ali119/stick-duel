@@ -449,30 +449,6 @@
   // 7. زر القائمة الرئيسية
   // =========================
 
-  const originalShow = window.show;
-
-  if (typeof originalShow === 'function') {
-    window.show = function(sc) {
-      originalShow.apply(this, arguments);
-
-      const oldButton = document.getElementById('sdProfileBtn');
-
-      if (sc === 'home') {
-        if (!oldButton) {
-          const button = document.createElement('button');
-
-          button.id = 'sdProfileBtn';
-          button.textContent = '👤 الملف الشخصي';
-          button.onclick = openProfile;
-
-          document.body.appendChild(button);
-        }
-      } else if (oldButton) {
-        oldButton.remove();
-      }
-    };
-  } else {
-    console.error('SD Profile: show function not found');
-  }
+  window.sdOpenProfile = openProfile;
 
 })();

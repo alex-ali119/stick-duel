@@ -724,7 +724,7 @@ if(document.getElementById('onlineRoot'))renderOnline();
 show=function(sc){
   originalShow(sc);
 
-  if(sc==='home'){
+    if(sc==='home'){
     const m=$('m');
 
     if(m&&!document.getElementById('onlineEntry')){
@@ -751,7 +751,27 @@ show=function(sc){
     if(loginBtn){
       loginBtn.textContent=user?'✔ تم تسجيل الدخول':'🔐 تسجيل الدخول';
     }
+
+    if(m&&!document.getElementById('sdProfileBtn')){
+      const p=document.createElement('button');
+      p.id='sdProfileBtn';
+      p.className='bt';
+      p.style.cssText='position:absolute;left:50%;top:74%;transform:translate(-50%,-50%);width:170px;background:#7544bd;z-index:2';
+      p.textContent='👤 الملف الشخصي';
+      p.onclick=()=>{
+        if(typeof window.sdOpenProfile==='function'){
+          window.sdOpenProfile();
+        }else{
+          alert('انتظر تحميل الملف الشخصي');
+        }
+      };
+      m.appendChild(p);
+    }
+  } else {
+    const p=document.getElementById('sdProfileBtn');
+    if(p)p.remove();
   }
+};
 };
   function showOnline(html){
     const m=$('m');m.style.display='block';m.className='';

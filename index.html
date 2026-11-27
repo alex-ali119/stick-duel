@@ -1104,7 +1104,19 @@ await ref.child('players/'+user.uid).set({
 <script>
 window.addEventListener('load', function () {
   const s = document.createElement('script');
-  s.src = 'https://alex-ali119.github.io/stick-duel/remote-updates/features.js?v=3';
+
+  s.src = 'https://alex-ali119.github.io/stick-duel/remote-updates/features.js?v=4';
+
+  s.onload = function () {
+    if (typeof window.sdOpenProfile === 'function') {
+      console.log('Profile loaded successfully');
+    }
+  };
+
+  s.onerror = function () {
+    alert('فشل تحميل الملف الشخصي');
+  };
+
   document.body.appendChild(s);
 });
 </script>

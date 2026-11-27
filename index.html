@@ -1062,7 +1062,7 @@ await ref.child('players/'+user.uid).set({
   <b class="${p?.ready?'onl-ok':'onl-wait'}">
     ${p?.ready?'✔ جاهز':'⏳ غير جاهز'}
   </b>
-</div>`;${isMe?'🟦 أنت':'🟥 الخصم'}: ${esc(p?.name||'بانتظار اللاعب')}</b><div class="onl-small">${p?.selection?`${WP[p.selection.weapon]?.ic||'👊'} ${esc(WP[p.selection.weapon]?.nm||'قبضة')} • ${HATS[p.selection.hat]?.[0]||'🚫'} ${esc(HATS[p.selection.hat]?.[1]||'بدون')}`:'لم يدخل بعد'}</div></div><b class="${p?.ready?'onl-ok':'onl-wait'}">${p?.ready?'✔ جاهز':'⏳ غير جاهز'}</b></div>`;
+</div>`;
     showOnline(`<h2>🏠 غرفة Stick Duel</h2>
       <div class="onl-card onl-row"><div><b>رمز الغرفة: <span style="color:#ffd34a;font-size:22px">${esc(roomCode)}</span></b><p class="onl-small">أرسل الرمز لصديقك للانضمام.</p></div><button style="min-width:90px" onclick="sdCopyCode()">نسخ الرمز</button></div>
       <div class="onl-card"><b>👥 اللاعبون</b>${playerCard(me,true)}${playerCard(other,false)}</div>

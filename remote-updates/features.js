@@ -451,4 +451,35 @@
 
   window.sdOpenProfile = openProfile;
 
+  
+  // =========================
+  // 8. إظهار زر الملف الشخصي
+  // =========================
+
+  const originalShow = window.show;
+
+  if (typeof originalShow === 'function') {
+    window.show = function(sc) {
+      const result = originalShow.apply(this, arguments);
+
+      let oldButton = document.getElementById('sdProfileBtn');
+
+      if (sc === 'home') {
+        if (!oldButton) {
+          const button = document.createElement('button');
+
+          button.id = 'sdProfileBtn';
+          button.textContent = '👤 الملف الشخصي';
+          button.onclick = openProfile;
+
+          document.body.appendChild(button);
+        }
+      } else if (oldButton) {
+        oldButton.remove();
+      }
+
+      return result;
+    };
+  }
+
 })();
